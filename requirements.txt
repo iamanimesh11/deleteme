@@ -1,2 +1,5 @@
 deepface
 opencv-python
+streamlit-webrtc
+av
+opencv-python-headless 
