@@ -4,3 +4,5 @@ av
 opencv-python-headless
 deepface
 libgl1-mesa-glx
+sudo apt-get update
+sudo apt-get install libgl1-mesa-glx
