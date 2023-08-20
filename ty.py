@@ -1,49 +1,55 @@
 import cv2
+import streamlit as st
 from deepface import DeepFace
 
-# Load the Haarcascade classifier
-faceCascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+def main():
+    st.title("Emotion Detection with DeepFace and OpenCV")
 
-# Initialize the video capture from webcam
-cap = cv2.VideoCapture(0)
+    # Load the Haarcascade classifier
+    faceCascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-# Check if the webcam is opened correctly
-if not cap.isOpened():
-    raise IOError("Cannot open webcam")
+    # Initialize the video capture from webcam
+    cap = cv2.VideoCapture(0)
 
-while True:
-    ret, frame = cap.read()  # Read one frame from the video stream
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # Check if the webcam is opened correctly
+    if not cap.isOpened():
+        raise IOError("Cannot open webcam")
 
-    # Detect faces in the frame
-    faces = faceCascade.detectMultiScale(gray, 1.1, 4)
+    while True:
+        ret, frame = cap.read()  # Read one frame from the video stream
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    for (x, y, w, h) in faces:
-        # Draw a rectangle around the face
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        # Detect faces in the frame
+        faces = faceCascade.detectMultiScale(gray, 1.1, 4)
 
-        # Analyze emotions using DeepFace
-        result = DeepFace.analyze(frame[y:y + h, x:x + w], actions=['emotion'])
+        for (x, y, w, h) in faces:
+            # Draw a rectangle around the face
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-        # Get the dominant emotion
-        dominant_emotion = result[0]['dominant_emotion']
+            # Analyze emotions using DeepFace
+            result = DeepFace.analyze(frame[y:y + h, x:x + w], actions=['emotion'])
 
-        # Display the dominant emotion text beside the face
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(frame,
-                    dominant_emotion,
-                    (x + w + 10, y + h // 2),
-                    font, 0.5,
-                    (0, 0, 255),
-                    1,
-                    cv2.LINE_AA)
+            # Get the dominant emotion
+            dominant_emotion = result['dominant_emotion']
 
-    cv2.imshow('Emotion Detection', frame)
+            # Display the dominant emotion text beside the face
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            cv2.putText(frame,
+                        dominant_emotion,
+                        (x + w + 10, y + h // 2),
+                        font, 0.5,
+                        (0, 0, 255),
+                        1,
+                        cv2.LINE_AA)
 
-    # Break the loop when 'q' is pressed
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+        st.image(frame, channels="BGR", caption="Emotion Detection")
 
-# Release the video capture and close all windows
-cap.release()
-cv2.destroyAllWindows()
+        # Break the loop when 'q' is pressed
+        if st.button("Quit"):
+            break
+
+    # Release the video capture and close all windows
+    cap.release()
+
+if __name__ == "__main__":
+    main()
