@@ -1,27 +1,54 @@
 import streamlit as st
-import asyncio
-from streamlit_webrtc import VideoProcessorBase, webrtc_streamer
+from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
+import av
+import threading
 
-# Define your video transformer class
-class EmotionVideoTransformer(VideoProcessorBase):
-    async def transform(self, frame):
-        # Your emotion detection and processing logic here
-        processed_frame = frame  # Process the frame as needed
-        return processed_frame
+RTC_CONFIGURATION = RTCConfiguration(
+    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+)
 
-def main():
-    st.title("Real-time Emotion Detection")
+st.set_page_config(page_title="Streamlit WebRTC Demo", page_icon="🤖")
+task_list = ["Video Stream"]
 
-    # Start the WebRTC component with your video transformer
-    webrtc_ctx = webrtc_streamer(
-        key="emotion-detection",
-        video_transformer_factory=EmotionVideoTransformer,
-        async_processing=True
+with st.sidebar:
+    st.title('Task Selection')
+    task_name = st.selectbox("Select your tasks:", task_list)
+st.title(task_name)
+
+if task_name == task_list[0]:
+    style_list = ['color', 'black and white']
+
+    st.sidebar.header('Style Selection')
+    style_selection = st.sidebar.selectbox("Choose your style:", style_list)
+
+    class VideoProcessor(VideoProcessorBase):
+        def __init__(self):
+            self.model_lock = threading.Lock()
+            self.style = style_list[0]
+
+        def update_style(self, new_style):
+            if self.style != new_style:
+                with self.model_lock:
+                    self.style = new_style
+
+        def recv(self, frame):
+            # img = frame.to_ndarray(format="bgr24")
+            img = frame.to_image()
+            if self.style == style_list[1]:
+                img = img.convert("L")
+
+            # return av.VideoFrame.from_ndarray(img, format="bgr24")
+            return av.VideoFrame.from_image(img)
+
+    ctx = webrtc_streamer(
+        key="example",
+        video_processor_factory=VideoProcessor,
+        rtc_configuration=RTC_CONFIGURATION,
+        media_stream_constraints={
+            "video": True,
+            "audio": False
+        }
     )
 
-    if not webrtc_ctx.video_transformer:
-        st.warning("Waiting for video to start...")
-        return
-
-if __name__ == "__main__":
-    main()
+    if ctx.video_processor:
+        ctx.video_transformer.update_style(style_selection)
