@@ -3,7 +3,7 @@ from streamlit_webrtc import VideoTransformerBase, webrtc_streamer
 
 # Define your video transformer class
 class EmotionVideoTransformer(VideoTransformerBase):
-    async def transform(self, frame):
+   def transform(self, frame):
         # Your emotion detection and processing logic here
         processed_frame = frame  # Process the frame as needed
         return processed_frame
