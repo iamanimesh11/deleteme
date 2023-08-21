@@ -1,5 +1,4 @@
 import streamlit as st
-import asyncio
 from streamlit_webrtc import VideoTransformerBase, webrtc_streamer
 
 # Define your video transformer class
