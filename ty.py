@@ -25,7 +25,7 @@ def main():
 
     if st.button("Submit"):
         # Write rating to Google Sheet
-        sheet = gs_client.open("hello").sheet1
+        sheet = gs_client.open("https://docs.google.com/spreadsheets/d/1CedcZYzZ9kkslFg4yZjYsZLUKQB0jvCZ7atcBpOszd8/edit?usp=sharing").sheet1
         sheet.append_row([rating])
         st.success("Rating submitted!")
 
